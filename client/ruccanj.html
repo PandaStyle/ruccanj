@@ -1,0 +1,470 @@
+<head>
+  <title>All Tomorrow's Parties</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+  {{> page}}
+</body>
+
+<template name="page">
+  {{#if showCreateDialog}}
+    {{> createDialog}}
+  {{/if}}
+
+  {{#if showInviteDialog}}
+    {{> inviteDialog}}
+  {{/if}}
+
+  <div class="header">
+      {{> header}}
+  </div>
+
+  <div class="content">
+      {{> tiles}}
+  </div>
+</template>
+
+<template name="button">
+    <div class="button">
+        <button class="btn btn-primary btn-large">Add Event</button>
+    </div>
+</template>
+
+<template name="list">
+    <div>
+        {{#if currentUserLoaded}}
+        <img src="{{picURL}}"/>
+        {{/if}}
+    </div>
+    {{#each parties}}
+    <div class="name">
+        <span>{{title}}</span>
+    </div>
+    {{/each}}
+</template>
+
+<template name="map">
+  <div class="map">
+    {{#constant}}
+      <svg width="500" height="500">
+        <circle class="callout" cx=-100 cy=-100></circle>
+        <g class="circles"></g>
+        <g class="labels"></g>
+      </svg>
+    {{/constant}}
+    <div>
+      <small class="attribution muted">&copy;
+        <a href="http://www.openstreetmap.org/?lat=37.78212&lon=-122.40146&zoom=15&layers=M"
+           target="_blank">OpenStreetMap</a> contributors</small>
+    </div>
+  </div>
+</template>
+
+<template name="details">
+  <div class="details">
+    {{#if party}}
+      {{#with party}}
+        <h1>{{title}}</h1>
+
+        <div class="description">{{description}}</div>
+
+        {{> attendance}}
+
+        <div class="rsvp-buttons">
+          {{#if currentUser}}
+            <input type="button" value="I'm going!"
+                   class="btn btn-small rsvp_yes {{maybeChosen "yes"}}">
+            <input type="button" value="Maybe"
+                   class="btn btn-small rsvp_maybe {{maybeChosen "maybe"}}">
+            <input type="button" value="No"
+                   class="btn btn-small rsvp_no {{maybeChosen "no"}}">
+          {{else}}
+            <i>Sign in to RSVP for this party.</i>
+          {{/if}}
+          <p><small>Posted by {{creatorName}}</small></p>
+        </div>
+
+        {{#if canRemove}}
+          <div class="alert alert-info"><small>
+              You posted this party and nobody is signed up to go, so if
+              you like, you could
+              <b><a href="#" class="remove">delete this listing</a></b>.
+          </small></div>
+        {{/if}}
+      {{/with}}
+    {{else}}
+      <h1 class="muted pagination-centered">
+        {{#if anyParties}}
+          Click a party to select it
+        {{else}}
+          Sign in and double click the map to post a party
+        {{/if}}
+      </h1>
+    {{/if}}
+  </div>
+</template>
+
+<template name="attendance">
+  <div class="attendance well well-small">
+    <div class="muted who"><b>Who</b></div>
+    {{#if public}}
+      <div>
+        <b>Everyone</b>
+        <span class="label label-inverse pull-right">Invited</span>
+      </div>
+    {{/if}}
+
+    {{#each rsvps}}
+      <div>
+        {{rsvpName}}
+        {{#if rsvpIs "yes"}}
+          <span class="label label-success pull-right">Going</span>
+        {{/if}}
+        {{#if rsvpIs "maybe"}}
+          <span class="label label-info pull-right">Maybe</span>
+        {{/if}}
+        {{#if rsvpIs "no"}}
+          <span class="label label pull-right">No</span>
+        {{/if}}
+      </div>
+    {{/each}}
+
+    {{#unless public}}
+      {{#each outstandingInvitations}}
+        <div>
+          {{invitationName}}
+          <span class="label label-inverse pull-right">Invited</span>
+        </div>
+      {{/each}}
+    {{/unless}}
+
+    {{#if nobody}}
+      <div>Nobody.</div>
+    {{/if}}
+
+    {{#if canInvite}}
+      <div class="invite">
+        <a href="#" class="btn btn-mini invite">Invite people</a>
+      </div>
+    {{/if}}
+  </div>
+</template>
+
+<template name="createDialog">
+  <div class="mask"> </div>
+  <div class="modal">
+    <div class="modal-header">
+      <button type="button" class="close cancel">&times;</button>
+      <h3>Add party</h3>
+    </div>
+
+    <div class="modal-body">
+      {{#if error}}
+        <div class="alert alert-error">{{error}}</div>
+      {{/if}}
+
+      <label>Title</label>
+      <input type="text" class="title span5">
+
+      <label>Description</label>
+      <textarea class="description span5"></textarea>
+
+      <label class="checkbox">
+        <input type="checkbox" class="private">
+        Private party &mdash; invitees only
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn cancel">Cancel</a>
+      <a href="#" class="btn btn-primary save">Add party</a>
+    </div>
+  </div>
+</template>
+
+<template name="inviteDialog">
+  <div class="mask"> </div>
+  <div class="modal">
+    <div class="modal-header">
+      <button type="button" class="close done">&times;</button>
+      <h3>Invite people</h3>
+    </div>
+
+    <div class="modal-body">
+      {{#each uninvited}}
+        <div class="invite-row">
+          <a href="#" class="btn invite">Invite</a>
+          {{displayName}}
+        </div>
+      {{else}}
+        Everyone on the site has already been invited.
+      {{/each}}
+    </div>
+
+    <div class="modal-footer">
+      <a href="#" class="btn btn-primary done">Done</a>
+    </div>
+  </div>
+</template>
+
+
+<template name="header">
+    <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+            <li class="active"><a href="#">Kezdő</a></li>
+            <li><a href="#">Mi ez?</a></li>
+            <li><a href="#">Kontakt</a></li>
+            <li>
+                {{loginButtons align="right"}}
+            </li>
+            <li>
+                {{#if currentUserLoaded}}
+                <img src="{{picURL}}"/>
+                {{/if}}
+            </li>
+        </ul>
+        <h3><img src="/logo.png" title="ruccanj.hu" style="margin-top: -10px"></h3>
+    </div>
+</template>
+
+<template name="tiles">
+<div id="wrap">
+
+<div class="container" style="width: auto">
+
+
+
+
+
+
+<div class="bigbg"><div class="hr"></div></div>
+
+
+
+<div class="jumbotron">
+    <p class="lead">
+        Ruccanj! Ki? Hát te. Csatlakozz a neked szimpatikus ruccanásokhoz és töltsd izgalmasan a szabadidődet.<br>
+        Bringázz, pókerezz, kosárlabdázz olyanokkal akik csak rád várnak.</p>
+    <a class="btn btn-large btn-primary" href="#">Ruccanj be</a>
+</div>
+
+
+
+<div class="row-fluid marketing">
+    <div class="span12">
+        <b>Népszerűek a következő napokban</b>: <span class="tag">bringa</span><span class="tag">túra</span><span class="tag">kirándulás</span><span class="tag">szülinap</span>
+    </div>
+</div>
+
+
+
+
+
+
+
+<div id="container" class="transitions-enabled clearfix">
+
+    <div class="box col3" style="color: white">
+        <p style="margin: 5px; font-weight: normal; line-height: 140%">Ruccanj! Ki? Hát te. Csatlakozz a neked szimpatikus ruccanásokhoz és töltsd izgalmasan a szabadidődet.
+            Bringázz, pókerezz, kosárlabdázz olyanokkal akik csak rád várnak.<br><br>
+            <a class="btn btn-primary" href="#">Ruccanj be</a></p>
+    </div>
+
+    <div class="box col2">
+        <p>Sit amet mi ullamcorper vehicula. Sed lectus. Praesent elementum hendrerit tortor. Sed semper lorem at felis.</p>
+    </div>
+
+    <div class="box col1">
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Ut condimentum mi vel tellus. Suspendisse laoreet. Fusce ut est sed dolor gravida convallis. Morbi vitae ante. Vivamus ultrices luctus nunc. Suspendisse et dolor. Etiam dignissim. Proin malesuada adipiscing lacus. Donec metus. Curabitur gravida.</p>
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+    <div class="box col3">
+        <p>Sed ac risus. Phasellus lacinia, magna a ullamcorper laoreet, lectus arcu pulvinar risus, vitae facilisis libero dolor a purus. Sed vel lacus. Mauris nibh felis, adipiscing varius, adipiscing in, lacinia vel, tellus. Suspendisse ac urna. Etiam pellentesque mauris ut lectus. Nunc tellus ante, mattis eget, gravida vitae, ultricies ac, leo. Integer leo pede, ornare a, lacinia eu, vulputate vel, nisl.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Morbi purus libero, faucibus adipiscing, commodo quis, gravida id, est. Sed lectus. Praesent elementum hendrerit tortor. Sed semper lorem at felis.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Vestibulum volutpat, lacus a ultrices sagittis,</p>
+        <p>Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula  </p>
+    </div>
+
+    <div class="box col2">
+        <p>Sit amet mi ullamcorper vehicula</p>
+    </div>
+
+    <div class="box col1">
+        <p>Morbi purus libero</p>
+    </div>
+
+    <div class="box col1">
+        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Nullam malesuada erat ut turpis. Suspendisse urna nibh, viverra non, semper suscipit, posuere a, pede.</p>
+    </div>
+
+    <div class="box col3">
+        <p>Donec nec justo eget felis facilisis fermentum. Aliquam porttitor mauris sit amet orci. Aenean dignissim pellentesque felis.</p>
+        <p>Vestibulum volutpat, lacus a ultrices sagittis,</p>
+        <ul>
+            <li>Lacus a ultrices sagittis</li>
+            <li>Democratis</li>
+            <li>Plummus</li>
+        </ul>
+    </div>
+
+    <div class="box col1">
+        <p>Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula  </p>
+    </div>
+
+    <div class="box col1">
+        <p>Sit amet mi ullamcorper vehicula</p>
+    </div>
+
+    <div class="box col1">
+        <h2>Morbi purus libero</h2>
+    </div>
+
+
+    <div class="box col2">
+        <p>Ut condimentum mi vel tellus. Suspendisse laoreet. Fusce ut est sed dolor gravida convallis. Morbi vitae ante. Vivamus ultrices luctus nunc. Suspendisse et dolor. Etiam dignissim. Proin malesuada adipiscing lacus. Donec metus. Curabitur gravida.</p>
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+    <div class="box col1">
+        <p>Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula</p>
+    </div>
+
+
+
+
+    <div class="box col1">
+        <p>adipiscing in, lacinia vel, tellus. Suspendisse ac urna. Etiam pellentesque mauris ut lectus.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Sit amet mi ullamcorper vehicula</p>
+    </div>
+
+    <div class="box col1">
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+
+
+    <div class="box col3">
+        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Phasellus hendrerit. Pellentesque aliquet nibh nec urna. In nisi neque, aliquet vel, dapibus id, mattis vel, nisi. Sed pretium, ligula sollicitudin laoreet viverra, tortor libero sodales leo, eget blandit nunc tortor eu nibh. Nullam mollis. Ut justo. Suspendisse potenti.</p>
+        <p>Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula  </p>
+        <p>Morbi interdum mollis sapien. Sed ac risus. Phasellus lacinia, magna a ullamcorper laoreet, lectus arcu pulvinar risus, vitae facilisis libero dolor a purus.</p>
+    </div>
+
+    <div class="box col2">
+        <p>adipiscing in, lacinia vel, tellus. Suspendisse ac urna. Etiam pellentesque mauris ut lectus.</p>
+        <p>Ut convallis, sem sit amet interdum consectetuer, odio augue aliquam leo, nec dapibus tortor nibh sed augue.  Sed vel lacus. Mauris nibh felis, adipiscing varius, adipiscing in, lacinia vel, tellus. Suspendisse ac urna. Etiam pellentesque mauris ut lectus. Nunc tellus ante, mattis eget, gravida vitae, ultricies ac, leo. Integer leo pede, ornare a, lacinia eu, vulputate vel, nisl.</p>
+    </div>
+
+    <div class="box col1">
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+    <div class="box col1">
+        <p>Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula</p>
+    </div>
+
+
+
+
+
+    <div class="box col2">
+        <p>Sit amet mi ullamcorper vehicula. Sed lectus. Praesent elementum hendrerit tortor. Sed semper lorem at felis.</p>
+    </div>
+
+    <div class="box col1">
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Ut condimentum mi vel tellus. Suspendisse laoreet. Fusce ut est sed dolor gravida convallis. Morbi vitae ante. Vivamus ultrices luctus nunc. Suspendisse et dolor. Etiam dignissim. Proin malesuada adipiscing lacus. Donec metus. Curabitur gravida.</p>
+        <p>Phasellus pede arcu, dapibus eu, fermentum et, dapibus sed, urna.</p>
+    </div>
+
+    <div class="box col3">
+        <p>Sed ac risus. Phasellus lacinia, magna a ullamcorper laoreet, lectus arcu pulvinar risus, vitae facilisis libero dolor a purus. Sed vel lacus. Mauris nibh felis, adipiscing varius, adipiscing in, lacinia vel, tellus. Suspendisse ac urna. Etiam pellentesque mauris ut lectus. Nunc tellus ante, mattis eget, gravida vitae, ultricies ac, leo. Integer leo pede, ornare a, lacinia eu, vulputate vel, nisl.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Morbi purus libero, faucibus adipiscing, commodo quis, gravida id, est. Sed lectus. Praesent elementum hendrerit tortor. Sed semper lorem at felis.</p>
+    </div>
+
+    <div class="box col2">
+        <p>Vestibulum volutpat, lacus a ultrices sagittis,</p>
+        <p>Fusce accumsan mollis eros. Pellentesque a diam sit amet mi ullamcorper vehicula  </p>
+    </div>
+
+    <div class="box col2">
+        <p>Sit amet mi ullamcorper vehicula</p>
+    </div>
+
+    <div class="box col1">
+        <p>Morbi purus libero</p>
+    </div>
+
+</div> <!-- #container -->
+
+
+
+<div class="row-fluid marketing" style="display: none">
+
+
+    <div class="span4">
+        <h4>Subheading</h4>
+        <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+        <h4>Subheading</h4>
+        <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+        <h4>Subheading</h4>
+        <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+    </div>
+
+    <div class="span4">
+        <h4>Subheading</h4>
+        <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+        <h4>Subheading</h4>
+        <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+        <h4>Subheading</h4>
+        <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+    </div>
+
+    <div class="span4">
+        <h4>Subheading</h4>
+        <p>Donec id elit non mi porta gravida at eget metus. Maecenas faucibus mollis interdum.</p>
+
+        <h4>Subheading</h4>
+        <p>Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Cras mattis consectetur purus sit amet fermentum.</p>
+
+        <h4>Subheading</h4>
+        <p>Maecenas sed diam eget risus varius blandit sit amet non magna.</p>
+    </div>
+
+</div>
+
+</div>
+
+<div id="push"></div></div>
+
+<div id="footer">
+    <div class="container">
+        <p class="muted">&copy; 2012 ruccanj.hu &nbsp; <a href="#"><b>f</b>acebook</a> | <a href="#"><b>t</b>witter</a></p>
+    </div>
+</div>
+</template>
+
