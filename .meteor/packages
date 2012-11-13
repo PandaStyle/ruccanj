@@ -8,7 +8,3 @@ insecure
 preserve-inputs
 bootstrap
 jquery
-handlebars
-accounts-base
-accounts-ui
-accounts-facebook
