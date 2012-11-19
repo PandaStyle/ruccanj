@@ -1,31 +1,24 @@
 Meteor.subscribe("events");
-
-if (Meteor.isClient) {
     Meteor.startup(function () {
-      //  debugger;
-        $('#container').masonry({
-            itemSelector: '.box',
-            isFitWidth: true
-        });
-    });
 
-}
+        Meteor.subscribe("events", function(){
+
+            Meteor.setTimeout(function(){
+                var $container = $('#container');
+                $container.isotope({
+                    itemSelector : '.box'
+                });
+
+            }, 10);
+        });
+
+    });
 
 ///////////////////////////////////////////////////////////////////////////////
 // Events
 Template.event_list.events = function () {
-    return Events.find({}, {sort: {timestamp: 1}});
-};
 
-Template.kulso.rendered = function () {
-    console.log("kulso kesz");
-    initMasonry();
-};
-
-
-var initMasonry = function(){
-   // $("#container").masonry( 'reload' );
-
+   return Events.find({});
 }
 
 ///////////////////////////////////////////////////////////////////////////////
