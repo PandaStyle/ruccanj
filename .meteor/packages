@@ -7,4 +7,4 @@ insecure
 preserve-inputs
 bootstrap
 jquery
-handlebars
+backbone
