@@ -39,9 +39,28 @@ Meteor.methods({
       date: options.date,
       location: options.location,
       description: options.description,
+      tag: options.tag,
       public: !! options.public
     });
-  }
+  },
+
+    getFriends: function () {
+        var user = Meteor.user();
+
+
+        // get profile data from Facebook
+        var result = Meteor.http.get("https://graph.facebook.com/me/friends?fields=name,picture", {
+            params: {access_token: Meteor.user().services.facebook.accessToken}});
+
+        if ( !result.error && result.data) {
+            // if successfully obtained facebook profile, save it off
+            return result.data;
+        }
+    },
+
+    getAccessToken: function () {
+        return Meteor.user().services.facebook.accessToken;
+    }
 });
 
 

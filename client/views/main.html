@@ -41,6 +41,14 @@
             <li class="active"><a href="#">Kezdő</a></li>
             <li><a href="#">Mi ez?</a></li>
             <li><a href="#">Kontakt</a></li>
+            <li>
+                {{loginButtons align="right"}}
+            </li>
+            <li>
+                {{#if currentUserLoaded}}
+                <img src="{{picURL}}"/>
+                {{/if}}
+            </li>
         </ul>
         <img src="  /ruccanjlogo.png" title="ruccanj.hu">
     </div>
@@ -75,19 +83,19 @@
         <p class="nomarg">Ruccanj! Ki? Hát te. <span class="nowrap">Csatlakozz a neked szimpatikus ruccanásokhoz és töltsd izgalmasan a szabadidődet.</span></p>
         <p class="mb20">Bringázz, pókerezz, kosárlabdázz olyanokkal akik csak rád várnak. <a href="#">Bővebben &rsaquo;</a></p>
         <a class="btn btn-large btn-primary" href="#">Ruccanj be</a>
-        <a class="btn btn-large btn-primary" href="#" id="add">Új Ruccanás</a>
+        <a class="btn btn-large btn-primary" href="/new" id="add">Új Ruccanás</a>
     </div>
 </template>
 
 <template name="filters">
-<div class="filters clearfix">
-    <div class="pull-left">
+<div id="filters" class="filters clearfix">
+    <div class="pull-left labelfilters">
         <p class="bold">Ruccanások</p>
         <span class="nowrap"><span class="label sel">összes</span><span class="label">legújabbak</span><span class="label">népszerűek</span></span>
     </div>
-    <div class="pull-left">
+    <div class="pull-left labelfilters">
         <p class="bold">Népszerű címkék</p>
-        <span class="nowrap"><span class="label">bringa</span><span class="label">túra</span><span class="label">kirándulás</span><span class="label">vásárlás</span><span class="label">futóverseny</span><span class="label">hétvége</span></span>
+        <span class="nowrap"><span class="label" data-label="bringa">bringa</span><span class="label" data-label="túra">túra</span><span class="label" data-label="futás">futás</span></span>
     </div>
     <div class="pull-right">
         <input type="text" placeholder="keresés" class="search"><i class="icon-search"></i>
@@ -112,7 +120,7 @@
         <div class="inner">
             <h2><a href="#">{{title}}</a></h2>
             <div class="mb30 labels">
-                <span class="label">bringa</span><span class="label">túra</span><span class="label">hétvége</span>
+                <span class="label">{{tag}}</span>
             </div>
             <div class="mb5 bold">
                 <i class="icon-calendar" title="Mikor"></i>{{date}}
@@ -154,9 +162,7 @@
         </div>
     </div>
 
-    {{#each events}}
-        {{> event_item}}
-    {{/each}}
+    {{renderList}}
 
 </template>
 

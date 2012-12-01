@@ -8,3 +8,6 @@ preserve-inputs
 bootstrap
 jquery
 backbone
+accounts-ui
+accounts-facebook
+accounts-google

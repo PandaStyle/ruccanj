@@ -11,14 +11,15 @@ var RuccRouter = Backbone.Router.extend({
         "new": "new"
     },
     main: function () {
-
         Session.set("currentPage", "mainPage");
     },
     new: function () {
         Session.set("currentPage", "newPage");
-    }
+    },
 
-//    setList: function (list_id) {
-//        this.navigate(list_id, true);
-//    }
+    redirect: function (url) {
+        this.navigate(url, true);
+    }
 });
+
+Router = new RuccRouter;

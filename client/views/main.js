@@ -6,28 +6,13 @@ var $container,
 Session.set("currentPage", null);
 
 
-Router = new RuccRouter;
-
 
 //This is DOm Ready
 Meteor.startup(function () {
 
     $container = $('#container');
-    $optionSets = $('#filters .labelfilters');
-    $optionLinks = $optionSets.find('span');
-
-
-    Meteor.subscribe("events", function(){
-        //the magic happens here
-        Meteor.flush();
-
-        $container.isotope({
-            itemSelector : '.box',
-            animationEngine: 'best-available'
-        });
-
-        setupFilterEvents();
-    });
+    $optionSets = $('.filters .labelfilters');
+    $optionLinks = $('.filters .labelfilters span');
 
 
     Backbone.history.start({pushState: true});
@@ -35,23 +20,40 @@ Meteor.startup(function () {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-// pageContent
+// Header template
+Template.header.picURL = function(){
+    return Meteor.user().profile.facebook.picture.data.url;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Filter template
+
+Template.filters.rendered = function(){
+    setupFilterEvents();
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// pageContent template
 Template.pageContent.newPage = function () {
     return Session.get("currentPage") == "newPage";
 };
 
 Template.pageContent.mainPage = function () {
     return Session.get("currentPage") == "mainPage";
+
 };
 
 
-Template.new.rendered= function(){
-    openMap(1);
-}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Filter event handlers
 function setupFilterEvents(){
+    $optionLinks = $('.filters .labelfilters span');
+
     $optionLinks.click(function(){
+        //debugger;
         var $this = $(this),
             tempval = $this.attr('data-label');
         // don't proceed if already selected
@@ -76,7 +78,7 @@ function setupFilterEvents(){
             changeLayoutMode( $this, options )
         } else {
             // otherwise, apply new options
-            $container.isotope( options );
+            $('#container').isotope( options );
         }
 
         return false;
@@ -86,16 +88,39 @@ function setupFilterEvents(){
 ///////////////////////////////////////////////////////////////////////////////
 // Events
 Template.event_list.events = function () {
+    Meteor.subscribe("events");
+    return Events.find({});
+};
 
-   return Events.find({});
-}
+Template.event_list.renderList = function () {
+
+    Meteor.subscribe("events", function(){
+        var cont = $('#container'),
+            frag = Meteor.renderList(
+                Events.find({}),
+                function(item) {
+
+                    return Template.event_item(item);
+                });
+
+        cont[0].appendChild(frag);
+        cont.isotope({
+            itemSelector : '.box',
+            animationEngine: 'best-available'
+        });
+    });
+
+};
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Create Event dialog
-var openCreateDialog = function (x, y) {
-    Session.set("createError", null);
-    Session.set("showCreateDialog", true);
-};
+var
+    openCreateDialog = function (x, y) {
+        Session.set("createError", null);
+        Session.set("showCreateDialog", true);
+    };
 
 Template.main.showCreateDialog = function () {
     return Session.get("showCreateDialog");
@@ -135,11 +160,6 @@ Template.createDialog.error = function () {
     return Session.get("createError");
 };
 
-Template.jumbotron.events({
-    'click #add': function (event, template) {
-        openCreateDialog();
-    }
-});
 
 
 
@@ -193,4 +213,5 @@ $.Isotope.prototype._masonryGetContainerSize = function() {
         width : (this.masonry.cols - unusedCols) * this.masonry.columnWidth
     };
 };
+
 
