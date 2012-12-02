@@ -15,6 +15,16 @@
 */
 Events = new Meteor.Collection("events");
 
+///////////////////////////////////////////////////////////////////////////////
+// Tags
+
+/*
+ All available tags
+ allTags: Array of Strings
+ */
+Tags = new Meteor.Collection("tags");
+
+
 //TODO: musthave
 //Events.allow({});
 
@@ -40,14 +50,13 @@ Meteor.methods({
       location: options.location,
       description: options.description,
       tag: options.tag,
-      public: !! options.public
+      public: !! options.public,
+      invitees: options.invitees
     });
   },
 
-    getFriends: function () {
-        var user = Meteor.user();
-
-
+   getFriends: function () {
+        console.log(Meteor.user().services.facebook.accessToken);
         // get profile data from Facebook
         var result = Meteor.http.get("https://graph.facebook.com/me/friends?fields=name,picture", {
             params: {access_token: Meteor.user().services.facebook.accessToken}});
@@ -56,7 +65,18 @@ Meteor.methods({
             // if successfully obtained facebook profile, save it off
             return result.data;
         }
-    },
+   },
+
+   addTags: function(param){
+       for(var i = 0; i < param.array.length; i++){
+           Tags.insert({
+               name: param.array[i]
+           })
+       }
+   },
+
+
+
 
     getAccessToken: function () {
         return Meteor.user().services.facebook.accessToken;

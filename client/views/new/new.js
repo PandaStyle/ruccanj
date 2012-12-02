@@ -6,6 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
+var selectedFriends = [];
+
 
 $.fn.state = function(state) {
     var d = 'disabled'
@@ -18,24 +20,52 @@ $.fn.state = function(state) {
 }
 
 
-
-
-
-
-
 function getFormValues(){
 
     var template = $('form#newForm');
 
     return result = {
-         isPublic : template.find("#form-public").val()[0] === 0,
+         isPublic : !template.find("#form-public").is(':checked'),
          title : template.find("#form-title").val(),
          date : template.find("#form-when").val(),
          location : template.find("#form-where").val(),
          description : template.find("#form-info").val(),
-         tag : template.find("select#form-tags :selected").val()
+         tag : template.find('input[name$="hiddenTagListA"]').val().split(','),
+         invitees: selectedFriends
     }
 
+}
+
+Template.new.rendered = function(){
+
+    $('#form-public').toggleButtons({
+        width: 220,
+        label: {
+            enabled: "Privát",
+            disabled: "Publikus"
+        },
+        style: {
+            // Accepted values ["primary", "danger", "info", "success", "warning"] or nothing
+            enabled: "info",
+            disabled: "success"
+        }
+    });
+
+    jQuery(".tagManager").tagsManager({
+        prefilled: ["Pisa", "Rome"],
+        CapitalizeFirstLetter: true,
+        preventSubmitOnEnter: true,
+        typeahead: true,
+        typeaheadAjaxSource: null,
+        typeaheadSource: ["Pisa", "Rome", "Milan", "Florence", "New York", "Paris", "Berlin", "London", "Madrid"],
+        delimeters: [44, 188, 13],
+        backspace: [8],
+        blinkBGColor_1: '#FFFF9C',
+        blinkBGColor_2: '#CDE69C',
+        hiddenTagListName: 'hiddenTagListA'
+    });
+
+    openMap(1);
 }
 
 Template.new.events({
@@ -51,7 +81,8 @@ Template.new.events({
                 description: formValues.description,
                 location: formValues.location,
                 tag: formValues.tag,
-                public: formValues.isPublic
+                public: formValues.isPublic,
+                invitees: formValues.invitees
             }, function (error, party) {
                 if(error)
                     console.log(error);
@@ -68,7 +99,9 @@ Template.new.events({
 
 
         function cb2(error, data){
-            $(evt.target).state('complete');
+
+            $(evt.target).state('complete')
+                         .prop('disabled', true);
             $(".ac").show();
             if(!error){
                 var friends = _.map(data.data, function(item){
@@ -100,7 +133,7 @@ Template.new.events({
                     search: function() {
                         // custom minLength
                         var term = extractLast( this.value );
-                        if ( term.length < 2 ) {
+                        if ( term.length < 1 ) {
                             return false;
                         }
                     },
@@ -112,6 +145,7 @@ Template.new.events({
 
                         $(".selectedFriends").append($("<li>", {text: ui.item.label}));
 
+                        selectedFriends.push(ui.item);
                         this.value = "";
                         return false;
 
@@ -125,36 +159,18 @@ Template.new.events({
                 };
 
 
-
-//                $( "#form-findfriends").autocomplete({
-//                    minLength: 0,
-//                    source: friends,
-//                    focus: function( event, ui ) {
-//
-//                        return false;
-//                    },
-//                    select: function( event, ui ) {
-//                        $( "#form-findfriends" ).val( ui.item.name );
-//                        $( "#project-id" ).val( ui.item.name );
-//                        $( "#project-description" ).html( ui.item.name );
-//                        $( "#project-icon" ).attr( "src",  ui.item.picUrl );
-//
-//                        return false;
-//                    }
-//                })
-//                    .data( "autocomplete" )._renderItem = function( ul, item ) {
-//                    return $( "<li>" )
-//                        .data( "item.autocomplete", item )
-//                        .append( "<a>" + item.name + "<br></a>" )
-//                        .appendTo( ul );
-//                };
-
-
             }
 
-            //
         }
 
+    },
+
+    'click #insert': function(evt){
+        var tags = $('input[name$="hiddenTagListA"]').val().split(',');
+        debugger;
+        Meteor.call("addTags", {array: tags}, function(error, party){
+            debugger;
+        });
     }
 
 })

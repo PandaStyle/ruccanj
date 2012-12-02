@@ -15,6 +15,7 @@
     <!--[if lt IE 9]>
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+
 </head>
 
 <body>
@@ -132,23 +133,26 @@
                 {{description}}
             </div>
             <div class="mb30 bold">
-                <i class="icon-user" title="Kik"></i><img src=" /u1.jpg"><img src=" /u2.jpg"><img src=" /u3.jpg"><img src="  /u4.jpg"><img src="  /u5.jpg"><img src="  /u6.jpg"><img src="  /u8.jpg"> +15
+                <i class="icon-user" title="Kik"></i>
+                {{#each invitees}}
+                    <img src="{{picUrl}}" alt="{{label}}" />
+                {{/each}}
             </div>
             <div class="mb10 bold">
                 <i class="icon-comment" title="Hozzászólások"></i>Hozzászólások
             </div>
-            <div class="comment mb10">
-                <img src="  /u8.jpg">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                <div class="muted">tegnap 18:02</div>
-            </div>
-            <div class="comment mb10">
-                <img src="  /u1.jpg">Consectetur adipiscing elit. Vivamus quis erat vitae ligula consectetur aliquet id ac nisl.
-                <div class="muted">tegnap 12:50</div>
-            </div>
+            <!--<div class="comment mb10">-->
+                <!--<img src="  /u8.jpg">Lorem ipsum dolor sit amet, consectetur adipiscing elit.-->
+                <!--<div class="muted">tegnap 18:02</div>-->
+            <!--</div>-->
+            <!--<div class="comment mb10">-->
+                <!--<img src="  /u1.jpg">Consectetur adipiscing elit. Vivamus quis erat vitae ligula consectetur aliquet id ac nisl.-->
+                <!--<div class="muted">tegnap 12:50</div>-->
+            <!--</div>-->
 
-            <div class="comment mb10">
-                <a href="#">van még...</a>
-            </div>
+            <!--<div class="comment mb10">-->
+                <!--<a href="#">van még...</a>-->
+            <!--</div>-->
         </div>
     </div>
 </template>

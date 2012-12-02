@@ -1,3 +1,10 @@
+/**
+ * Created with JetBrains WebStorm.
+ * User: Panda
+ * Date: 2012.12.02.
+ * Time: 1:59
+ * To change this template use File | Settings | File Templates.
+ */
 var $container,
     $optionSets,
     $optionLinks;
